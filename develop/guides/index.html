@@ -58,9 +58,21 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#example-talconfigyaml">Example talconfig.yaml</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dry-dont-repeat-yourself-in-talconfigyaml">DRY (Don't Repeat Yourself) in talconfig.yaml</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adding-talos-extensions-and-kernel-arguments">Adding Talos extensions and kernel arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adding-ingress-firewall-and-extra-manifests-for-each-node">Adding Ingress Firewall and extra manifests for each node</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#configuring-sops-for-talhelper">Configuring SOPS for Talhelper</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#using-doppler-instead-of-sops">Using Doppler instead of SOPS</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#generating-talosctl-commands-for-bash-scripting">Generating talosctl commands for bash scripting</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#selfhosted-image-factory">Selfhosted Image Factory</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#editing-talconfigyaml-file">Editing talconfig.yaml file</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#shell-completion">Shell completion</a>
     </li>
@@ -142,6 +154,112 @@
 <p>Then you can run <code>talhelper genconfig</code>.
 Here's a more detailed example <a href="https://github.com/budimanjojo/talhelper/blob/bf3c112f168be583cfc658a5425427974796b2af/example/talconfig.yaml">talconfig.yaml</a>.</p>
 <p>To see all the available options of the configuration file, head over to <a href="../reference/configuration/">Configuration Reference</a>.</p>
+<h2 id="dry-dont-repeat-yourself-in-talconfigyaml">DRY (Don't Repeat Yourself) in <code>talconfig.yaml</code></h2>
+<p>A lot of times, you have similar configurations for all your nodes.
+Instead of writing them multiple times for each node, you can make use of <code>controlPlane</code> and <code>worker</code> fields as "global configurations" for all your node group.</p>
+<div class="highlight"><pre><span></span><code><span class="nn">---</span>
+<span class="nt">clusterName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-cluster</span>
+<span class="nt">nodes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cp1</span>
+<span class="w">    </span><span class="nt">controlPlane</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">ipAddress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.200.11</span>
+<span class="w">    </span><span class="nt">installDisk</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cp2</span>
+<span class="w">    </span><span class="nt">controlPlane</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">ipAddress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.200.12</span>
+<span class="w">    </span><span class="nt">installDisk</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda</span>
+<span class="hll"><span class="nt">controlPlane</span><span class="p">:</span>
+</span><span class="hll"><span class="w">  </span><span class="nt">schematic</span><span class="p">:</span>
+</span><span class="hll"><span class="w">    </span><span class="nt">customization</span><span class="p">:</span>
+</span><span class="hll"><span class="w">      </span><span class="nt">extraKernelArgs</span><span class="p">:</span>
+</span><span class="hll"><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">net.ifnames=0</span>
+</span><span class="hll"><span class="w">  </span><span class="nt">patches</span><span class="p">:</span>
+</span><span class="hll"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|-</span>
+</span><span class="hll"><span class="w">      </span><span class="no">- op: add</span>
+</span><span class="hll"><span class="w">        </span><span class="no">path: /machine/kubelet/extraArgs</span>
+</span><span class="hll"><span class="w">        </span><span class="no">value:</span>
+</span><span class="hll"><span class="w">          </span><span class="no">rotate-server-certificates: &quot;true&quot;</span>
+</span></code></pre></div>
+<p>The <code>schematic</code> and <code>patches</code> defined in <code>controlPlane</code> will be applied to both <code>cp1</code> and <code>cp2</code> because they're both in the group of <code>controlPlane</code> nodes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><a href="../reference/configuration/#nodeconfigs">NodeConfigs</a> you define in <code>controlPlane</code> or <code>worker</code> will be overwritten if you define them per node in <code>nodes[]</code> section.
+But, for <code>patches</code> and <code>extraManifests</code> they are appended instead because it makes more sense.</p>
+<p>You <strong>can</strong> modify the default behavior by adding <code>overridePatches: true</code> and <code>overrideExtraManifests: true</code> inside <code>nodes[]</code> for node you don't want the default behavior.</p>
+</div>
+<h2 id="adding-talos-extensions-and-kernel-arguments">Adding Talos extensions and kernel arguments</h2>
+<p>Talos v1.5 introduced a new unified way to generate boot assets for installer container image that you can build yourself using their <code>imager</code> container or use <a href="https://factory.talos.dev/">image-factory</a> to dynamically build it for you.
+The old way of installing system extensions using <code>machine.install.extensions</code> in the configuration file is being deprecated, so it's not recommended to use it.</p>
+<p><code>Talhelper</code> can help you to generate the installer url like <code>image-factory</code> if you provide <code>schematic</code> for your nodes.
+Let's say your <code>warmachine</code> node is using Intel processor so you want to have <code>intel-ucode</code> extension and you also want to use traditional network interface naming by providing <code>net.ifnames=0</code> to the kernel argument.
+Your <code>talhelper.yaml</code> should be something like this:</p>
+<div class="highlight"><pre><span></span><code><span class="nn">---</span>
+<span class="nt">clusterName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-cluster</span>
+<span class="nt">talosVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.5.4</span>
+<span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://192.168.200.10:6443</span>
+<span class="nt">nodes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">warmachine</span>
+<span class="w">    </span><span class="nt">controlPlane</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">ipAddress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.200.12</span>
+<span class="hll"><span class="w">    </span><span class="nt">schematic</span><span class="p">:</span>
+</span><span class="hll"><span class="w">      </span><span class="nt">customization</span><span class="p">:</span>
+</span><span class="hll"><span class="w">        </span><span class="nt">extraKernelArgs</span><span class="p">:</span>
+</span><span class="hll"><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">net.ifnames=0</span>
+</span><span class="hll"><span class="w">        </span><span class="nt">systemExtensions</span><span class="p">:</span>
+</span><span class="hll"><span class="w">          </span><span class="nt">officialExtensions</span><span class="p">:</span>
+</span><span class="hll"><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">siderolabs/intel-ucode</span>
+</span></code></pre></div>
+<p>When you run <code>talhelper genconfig</code>, the generated manifest file for <code>warmachine</code> will have <code>machine.install.image</code> value of <code>factory.talos.dev/installer/9e8cc193609699825d61c039c7738d81cf29c7b20f2a91d8f5c540511b9ea0b4:v1.5.4</code>, which will be the same url you'll get if using <code>image-factory</code>.</p>
+<p>If you don't want to use the url from <code>image-factory</code> or you want to use your own installer image, you can use per node <code>talosImageURL</code> like this:</p>
+<div class="highlight"><pre><span></span><code><span class="nn">---</span>
+<span class="nt">clusterName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-cluster</span>
+<span class="nt">talosVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.5.4</span>
+<span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://192.168.200.10:6443</span>
+<span class="nt">nodes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">warmachine</span>
+<span class="w">    </span><span class="nt">controlPlane</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">ipAddress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.200.12</span>
+<span class="hll"><span class="w">    </span><span class="nt">talosImageURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my.registry/install/talos-installer-image</span>
+</span></code></pre></div>
+<p>This will result in <code>machine.install.image</code> value to be <code>my.registry/install/talos-installer-image:v1.5.4</code>.</p>
+<h2 id="adding-ingress-firewall-and-extra-manifests-for-each-node">Adding Ingress Firewall and extra manifests for each node</h2>
+<p>With the addition of Ingress Firewall in Talos v1.6 and their future plan of multi-document machine configuration, you can now add firewall rules and extra manifests for each node.
+Let's say you want to strengthen your nodes like described in the <a href="https://www.talos.dev/v1.6/talos-guides/network/ingress-firewall/#recommended-rules">recommended rules</a>.
+You can achieve it like so:</p>
+<div class="highlight"><pre><span></span><code><span class="nn">---</span>
+<span class="nt">clusterName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-cluster</span>
+<span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://192.168.200.10:6443</span>
+<span class="nt">clusterSvcNets</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${CLUSTER_SUBNET}</span><span class="w"> </span><span class="c1">## Define this in your talenv.yaml file</span>
+<span class="nt">controlPlane</span><span class="p">:</span>
+<span class="hll"><span class="nt">ingressFirewall</span><span class="p">:</span>
+</span><span class="hll"><span class="w">  </span><span class="nt">defaultAction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">block</span>
+</span><span class="hll"><span class="w">  </span><span class="nt">rules</span><span class="p">:</span>
+</span><span class="hll"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubelet-ingress</span>
+</span><span class="hll"><span class="w">      </span><span class="nt">portSelector</span><span class="p">:</span>
+</span><span class="hll"><span class="w">        </span><span class="nt">ports</span><span class="p">:</span>
+</span><span class="hll"><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10250</span>
+</span><span class="hll"><span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tcp</span>
+</span><span class="hll"><span class="w">      </span><span class="nt">ingress</span><span class="p">:</span>
+</span><span class="hll"><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">subnet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${CLUSTER_SUBNET}</span>
+</span><span class="hll"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apid-ingress</span>
+</span><span class="hll"><span class="w">      </span><span class="nt">portSelector</span><span class="p">:</span>
+</span><span class="hll"><span class="w">        </span><span class="nt">ports</span><span class="p">:</span>
+</span><span class="hll"><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50000</span>
+</span><span class="hll"><span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tcp</span>
+</span><span class="hll"><span class="w">      </span><span class="nt">ingress</span><span class="p">:</span>
+</span><span class="hll"><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">subnet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0.0.0/0</span>
+</span><span class="hll"><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">subnet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">::/0</span>
+</span><span class="hll"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</span><span class="nt">nodes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">worker1</span>
+<span class="w">    </span><span class="nt">controlPlane</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">ipAddress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.200.12</span>
+<span class="hll"><span class="w">    </span><span class="nt">extraManifests</span><span class="p">:</span>
+</span><span class="hll"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">worker1-firewall.yaml</span>
+</span></code></pre></div>
+<p>You can add <code>ingressFirewall</code> and <code>extraManifests</code> below <code>controlPlane</code> or <code>worker</code> field for node groups that you want to apply.
+Or you can add them to <code>nodes[]</code> field for specific node you want to apply.</p>
 <h2 id="configuring-sops-for-talhelper">Configuring SOPS for Talhelper</h2>
 <p><a href="https://github.com/getsops/sops">sops</a> is a simple and flexible tool for managing secrets.</p>
 <p>If you haven't used <code>sops</code> before, the easiest way to get started is by using <a href="https://github.com/FiloSottile/age">age</a> as the encryption tool of choice.
@@ -213,6 +331,37 @@ Here's the simplified step by step to achieve this:</p>
 3. Run <code>doppler</code> CLI command that sets environment variable before running the <code>talhelper</code> command i.e: <code>doppler run -p talhelper -c env talhelper genconfig</code>.</p>
 </li>
 </ol>
+<h2 id="generating-talosctl-commands-for-bash-scripting">Generating <code>talosctl</code> commands for bash scripting</h2>
+<p>Thanks to the idea and contribution of <a href="https://github.com/mirceanton">mirceanton</a>, you can generate <code>talosctl</code> commands for bash scripting in your workflow.
+For example, in the directory where a <code>talconfig.yaml</code> like this is located:</p>
+<div class="highlight"><pre><span></span><code><span class="nn">---</span>
+<span class="nt">clusterName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-cluster</span>
+<span class="nt">talosVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.5.5</span>
+<span class="nt">nodes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">node1</span>
+<span class="w">    </span><span class="nt">ipAddress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.10.11</span>
+<span class="w">    </span><span class="nt">controlPlane</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p>After running <code>talhelper genconfig</code>, you can run <code>talhelper gencommand apply | bash</code> in the terminal to apply the generated config into your machine(s) automatically.
+There are some other <code>gencommand</code> commands that you can use like <code>upgrade</code>, <code>upgrade-k8s</code>, <code>bootstrap</code>, etc,</p>
+<p>For more information about the available <code>gencommand</code> commands and flags you can use, head over to the <a href="../reference/cli/#talhelper-gencommand">documentation</a>.</p>
+<h2 id="selfhosted-image-factory">Selfhosted Image Factory</h2>
+<p>By default, the generated manifests will use the official <a href="https://factory.talos.dev">image-factory</a> to pull the installer image.
+If you're self hosting your own image-factory, you can change your <code>talconfig.yaml</code> like so:</p>
+<div class="highlight"><pre><span></span><code><span class="nn">---</span>
+<span class="nt">clusterName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-cluster</span>
+<span class="nt">imageFactory</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">registryURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myfactory.com</span>
+<span class="w">  </span><span class="nt">schematicEndpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/schematics</span>
+<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">  </span><span class="nt">installerURLTmpl</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{{</span><span class="nv">.RegistryURL</span><span class="p p-Indicator">}}</span><span class="l l-Scalar l-Scalar-Plain">/installer/{{.ID}}:{{.Version}}</span>
+</code></pre></div>
+<p>The <code>schematicEndpoint</code> is used to do HTTP POST request to get the schematic ID.
+If your selfhosted image factory doesn't do schematic ID like the official one does, you can pass <code>--offline</code> flag to <code>talhelper genconfig</code> command and modify the <code>installerURLTmpl</code> to your needs.</p>
+<h2 id="editing-talconfigyaml-file">Editing <code>talconfig.yaml</code> file</h2>
+<p>If you're using a text editor with <code>yaml</code> LSP support, you can use <code>talhelper genschema</code> command to generate a <code>talconfig.json</code>.
+You can then feed that file to the language server so you can get autocompletion when editing <code>talconfig.yaml</code> file.</p>
+<p>If your LSP is configured to use <a href="https://www.schemastore.org/json/">JSON schema store</a>, you should get auto-completion working immediately.</p>
 <h2 id="shell-completion">Shell completion</h2>
 <p>Depending on how you install <code>talhelper</code>, you might not need to do anything to get autocompletion for <code>talhelper</code> commands i.e if you install using the Nix Flakes or AUR.</p>
 <p>If you don't get it working out of the box, you can use <code>talhelper completion</code> command to generate autocompletion for your shell.</p>

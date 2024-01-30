@@ -67,11 +67,17 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#node">Node</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#nodeconfigs">NodeConfigs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#imagefactory">ImageFactory</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#machinespec">MachineSpec</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ingressfirewall">IngressFirewall</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#networkrule">NetworkRule</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#cniconfig">CNIConfig</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#controlplane">ControlPlane</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#worker">Worker</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#installdiskselector">InstallDiskSelector</a>
     </li>
@@ -81,9 +87,15 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#installextensionconfig">InstallExtensionConfig</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#schematic">Schematic</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#kernelmoduleconfig">KernelModuleConfig</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#device">Device</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#portselector">PortSelector</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ingressconfig">IngressConfig</a>
     </li>
     </ul>
                   </li>
@@ -176,16 +188,6 @@
 <td align="center"><img align="center" alt="✅" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2705.png" title=":white_check_mark:" width="20px" /></td>
 </tr>
 <tr>
-<td><code>talosImageURL</code></td>
-<td>string</td>
-<td>Allows for supplying the image used to perform the installation.<details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">talosImageURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/siderolabs/installer</span>
-</code></pre></div>
-</details></td>
-<td align="center"><code>"ghcr.io/siderolabs/installer"</code></td>
-<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
-</tr>
-<tr>
 <td><code>talosVersion</code></td>
 <td>string</td>
 <td><details><summary>Talos version to perform the installation.</summary>Image reference for each Talos release can be found on <br /><a href="https://github.com">Talos GitHub release page</a></details><details><summary><em>Show example</em></summary>
@@ -275,6 +277,21 @@
 <td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
 </tr>
 <tr>
+<td><code>imageFactory</code></td>
+<td><a href="#imagefactory">ImageFactory</a></td>
+<td>Configures selfhosted image factory.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">imageFactory</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">registryURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myfactory.com</span>
+<span class="w">  </span><span class="nt">schematicEndpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/schematics</span>
+<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https</span>
+<span class="w">  </span><span class="nt">installerURLTmpl</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{{</span><span class="nv">.RegistryURL</span><span class="p p-Indicator">}}</span><span class="l l-Scalar l-Scalar-Plain">/installer/{{.ID}}:{{.Version}}</span>
+<span class="w">  </span><span class="nt">ISOURLTmpl</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{{</span><span class="nv">.Protocol</span><span class="p p-Indicator">}}</span><span class="l l-Scalar l-Scalar-Plain">://{{.RegistryURL}}/image/{{.ID}}/{{.Version}}/{{.Mode}}/{{.Arch}}.iso</span>
+</code></pre></div>
+</details></td>
+<td align="center"><code>nil</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
 <td><code>patches</code></td>
 <td>[]string</td>
 <td><details><summary>Patches to be applied to all nodes.</summary>List of strings containing RFC6902 JSON patches, strategic merge patches,<br />or a file containing them</details><details><summary><em>Show example</em></summary>
@@ -296,9 +313,13 @@
 </tr>
 <tr>
 <td><code>controlPlane</code></td>
-<td><a href="#controlplane">ControlPlane</a></td>
-<td>Configurations targetted for controlplane nodes.</details><details><summary><em>Show example</em></summary>
+<td><a href="#nodeconfigs">NodeConfigs</a></td>
+<td>Configurations targetted for all controlplane nodes.</details><details><summary><em>Show example</em></summary>
 <div class="highlight"><pre><span></span><code><span class="nt">controlPlane</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">kernelModules</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">br_netfilter</span>
+<span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nf_conntrack_max=131072</span>
 <span class="w">  </span><span class="nt">patches</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|-</span>
 <span class="w">      </span><span class="no">- op: add</span>
@@ -317,9 +338,13 @@
 </tr>
 <tr>
 <td><code>worker</code></td>
-<td><a href="#worker">Worker</a></td>
-<td>Configurations targetted for worker nodes.</details><details><summary><em>Show example</em></summary>
+<td><a href="#nodeconfigs">NodeConfigs</a></td>
+<td>Configurations targetted for all worker nodes.</details><details><summary><em>Show example</em></summary>
 <div class="highlight"><pre><span></span><code><span class="nt">worker</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">kernelModules</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">br_netfilter</span>
+<span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nf_conntrack_max=131072</span>
 <span class="w">  </span><span class="nt">patches</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|-</span>
 <span class="w">      </span><span class="no">- op: add</span>
@@ -375,16 +400,6 @@
 <td align="center"><img align="center" alt="✅" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2705.png" title=":white_check_mark:" width="20px" /></td>
 </tr>
 <tr>
-<td><code>talosImageURL</code></td>
-<td>string</td>
-<td>Allows for supplying the node level image used to perform the installation.<details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">talosImageURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">factory.talos.dev/installer/e9c7ef96884d4fbc8c0a1304ccca4bb0287d766a8b4125997cb9dbe84262144e</span>
-</code></pre></div>
-</details></td>
-<td align="center"><code>""</code></td>
-<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
-</tr>
-<tr>
 <td><code>installDiskSelector</code></td>
 <td><a href="#installdiskselector">InstallDiskSelector</a></td>
 <td><details><summary>Look up disk used for installation.</summary>Required if <code>installDisk</code> is not specified.</details><details><summary><em>Show example</em></summary>
@@ -403,6 +418,111 @@
 <td>bool</td>
 <td>Whether the node is a controlplane.<details><summary><em>Show example</em></summary>
 <div class="highlight"><pre><span></span><code><span class="nt">controlPlane</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>false</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>overridePatches</code></td>
+<td>bool</td>
+<td><details><summary>Whether <code>patches</code> defined here should override the one defined in node group.</summary>By default they will get appended instead.</details><details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">overridePatches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>false</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>overrideExtraManifests</code></td>
+<td>bool</td>
+<td><details><summary>Whether <code>extraManifests</code> defined here should override the one defined in node group.</summary>By default they will get appended instead.</details><details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">overrideExtraManifests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>false</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td>-</td>
+<td><a href="#nodeconfigs">NodeConfigs</a></td>
+<td>Node specific configurations that will override node group configurations.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">talosImageURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">factory.talos.dev/installer/e9c7ef96884d4fbc8c0a1304ccca4bb0287d766a8b4125997cb9dbe84262144e</span>
+<span class="nt">nodeLabels</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">rack</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rack1a</span>
+<span class="nt">nodeTaints</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">exampleTaint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exampletaintValue:NoSchedule</span>
+<span class="nt">disableSearchDomain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>nil</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+</table>
+<h2 id="nodeconfigs">NodeConfigs</h2>
+<p><code>NodeConfigs</code> defines machine configurations.</p>
+<table>
+<tr>
+<th>Field</th>
+<p><th>Type</th><th>Description</th><th>Default Value</th><th>Required</th></p>
+</tr>
+<tr>
+<td><code>talosImageURL</code></td>
+<td>string</td>
+<td>Allows for supplying the node level image used to perform the installation.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">talosImageURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">factory.talos.dev/installer/e9c7ef96884d4fbc8c0a1304ccca4bb0287d766a8b4125997cb9dbe84262144e</span>
+</code></pre></div>
+</details></td>
+<td align="center"><code>""</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>machineSpec</code></td>
+<td><a href="#machinespec">MachineSpec</a></td>
+<td><details><summary>Machine hardware specification for the node.</summary>Only used for <code>genurl iso</code> subcommand.</details><details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">machineSpec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metal</span>
+<span class="w">  </span><span class="nt">arch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arm64</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>nil</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>ingressFirewall</code></td>
+<td><a href="#ingressfirewall">IngressFirewall</a></td>
+<td>Machine firewall specification for the node.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">ingressFirewall</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">defaultAction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">block</span>
+<span class="w">  </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubelet-ingress</span>
+<span class="w">      </span><span class="nt">portSelector</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10250</span>
+<span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tcp</span>
+<span class="w">      </span><span class="nt">ingress</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">subnet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">172.20.0.0/24</span>
+<span class="w">          </span><span class="nt">except</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">172.20.0.1/32</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>nil</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>nodeLabels</code></td>
+<td>map[string]string</td>
+<td>Labels to be added to the node.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">rack</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rack1a</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>false</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>nodeTaints</code></td>
+<td>map[string]string</td>
+<td>Node taints for the node.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">exampleTaint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exampleTaintValue:NoSchedule</span>
 </code></pre></div>
 </summary></td>
 <td align="center"><code>false</code></td>
@@ -447,14 +567,19 @@
 <td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
 </tr>
 <tr>
-<td><code>extensions</code></td>
-<td>[]<a href="#installextensionconfig">InstallExtensionConfig</a></td>
-<td>List of additional system extensions image to install.<details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">extensions</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/siderolabs/tailscale:1.44.0</span>
+<td><code>schematic</code></td>
+<td><a href="#schematic">Schematic</a></td>
+<td>Configure Talos image customization to be used in the installer image<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">schematic</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">customization</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">extraKernelArgs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">net.ifnames=0</span>
+<span class="w">    </span><span class="nt">systemExtensions</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">officialExtensions</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">siderolabs/intel-ucode</span>
 </code></pre></div>
 </summary></td>
-<td align="center"><code>[]</code></td>
+<td align="center"><code>nil</code></td>
 <td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
 </tr>
 <tr>
@@ -501,6 +626,18 @@
 <td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
 </tr>
 <tr>
+<td><code>extraManifests</code></td>
+<td>[]string</td>
+<td>List of manifest files to be added for the node.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">extraManifests</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">etcd-firewall.yaml</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubelet-firewall.yaml</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>[]</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
 <td><code>patches</code></td>
 <td>[]string</td>
 <td><details><summary>Patches to be applied to the node.</summary>List of strings containing RFC6902 JSON patches, strategic merge patches,<br />or a file containing them.</details><details><summary><em>Show example</em></summary>
@@ -520,38 +657,151 @@
 <td align="center"><code>[]</code></td>
 <td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
 </tr>
+</table>
+<h2 id="imagefactory">ImageFactory</h2>
+<p><code>ImageFactory</code> defines configuration for selfhosted image-factory.</p>
+<table>
 <tr>
-<td><code>configPatches</code></td>
-<td>[]map[string]interface{}</td>
-<td><details><summary><strong>DEPRECATED, use <code>patches</code> instead</strong>.</summary>List of RFC6902 JSON patches to be applied to the node.</details><details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">configPatches</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add</span>
-<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/machine/install/extraKernelArgs</span>
-<span class="w">    </span><span class="nt">value</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">console=ttyS1</span>
+<th>Field</th>
+<p><th>Type</th><th>Description</th><th>Default Value</th><th>Required</th></p>
+</tr>
+<tr>
+<td><code>registryURL</code></td>
+<td>string</td>
+<td>Registry URL of the factory.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">registryURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myfactory.com</span>
 </code></pre></div>
-</summary></td>
-<td align="center"><code>[]</code></td>
+</details></td>
+<td align="center"><code>"factory.talos.dev"</code></td>
 <td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
 </tr>
 <tr>
-<td><code>inlinePatch</code></td>
-<td>map[string]interface{}</td>
-<td><details><summary><strong>DEPRECATED, use <code>patches</code> instead</strong>.</summary>Strategic merge patches to be applied to the node.</details><details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">inlinePatch</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">machine</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">interfaces</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">interface</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">eth0</span>
-<span class="w">          </span><span class="nt">addresses</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">192.168.200.11/24</span><span class="p p-Indicator">]</span>
+<td><code>protocol</code></td>
+<td>string</td>
+<td>Protocol the registry is listening to.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
 </code></pre></div>
 </summary></td>
-<td align="center"><code>map[]</code></td>
+<td align="center"><code>https</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>schematicEndpoint</code></td>
+<td>string</td>
+<td>Path to do HTTP POST request to the registry.</details><details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">schematicEndpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/schematics</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>/schematics</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>installerURLTmpl</code></td>
+<td>string</td>
+<td><details><summary>Go template to parse the full installer URL.</summary>Available placeholders: <code>RegistryURL</code>,<code>ID</code>,<code>Version</code>, <code>Secureboot</code></details><details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">installerURLTmpl</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{.RegistryURL}}/installer/{{.ID}}:{{.Version}}&quot;</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>{{.RegistryURL}}/installer{{if .Secureboot}}-secureboot{{end}}/{{.ID}}:{{.Version}}</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>ISOURLTmpl</code></td>
+<td>string</td>
+<td><details><summary>Go template to parse the full ISO image URL.</summary>Available placeholders: <code>Protocol</code>,<code>RegistryURL</code>,<code>ID</code>,<code>Version</code>,<code>Mode</code>,<code>Arch</code>, <code>Secureboot</code>, <code>UseUKI</code></details><details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">ISOURLTmpl</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{.Protocol}}://{{.RegistryURL}}/image/{{.ID}}/{{.Version}}/{{.Mode}}-{{.Arch}}.iso&quot;</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>{{.Protocol}}://{{.RegistryURL}}/image/{{.ID}}/{{.Version}}/{{.Mode}}-{{.Arch}}{{if .Secureboot}}-secureboot{{end}}{{if and .Secureboot .UseUKI}}-uki.efi{{else}}.iso{{end}}</code></td>
 <td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
 </tr>
 </table>
-<h2 id="cniconfig">CNIConfig</h2>
-<p><code>CNIConfig</code> defines the CNI to be used for the cluster's network.</p>
+<h2 id="machinespec">MachineSpec</h2>
+<p><code>MachineSpec</code> defines machine hardware configurations for a node.</p>
+<table>
+<tr>
+<th>Field</th>
+<p><th>Type</th><th>Description</th><th>Default Value</th><th>Required</th></p>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td>string</td>
+<td>Machine mode.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metal</span>
+</code></pre></div>
+</details></td>
+<td align="center"><code>"metal"</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>arch</code></td>
+<td>string</td>
+<td>Machine architecture.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">arch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arm64</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>amd64</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>secureboot</code></td>
+<td>bool</td>
+<td>Whether to enable Secure Boot.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">secureboot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>false</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>useUKI</code></td>
+<td>bool</td>
+<td>Whether to use UKI if Secure Boot is enabled.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">useUKI</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+</summary></td>
+<td align="center"><code>false</code></td>
+<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+</tr>
+</table>
+<h2 id="ingressfirewall">IngressFirewall</h2>
+<p><code>IngressFirewall</code> defines machine firewall configuration for a node.</p>
+<table>
+<tr>
+<th>Field</th>
+<p><th>Type</th><th>Description</th><th>Default Value</th><th>Required</th></p>
+</tr>
+<tr>
+<td><code>defaultAction</code></td>
+<td><code>string</code></td>
+<td><details><summary>Default action for all not explicitly configured traffic.</summary>Can be "accept" or "block"</details><details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">defaultAction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">accept</span>
+</code></pre></div>
+</details></td>
+<td align="center"><code>nil</code></td>
+<td align="center"><img align="center" alt="✅" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2705.png" title=":white_check_mark:" width="20px" /></td>
+</tr>
+<tr>
+<td><code>rules</code></td>
+<td>[]<a href="#networkrule">NetworkRule</a></td>
+<td><details><summary>List of matching network rules to allow or block against the defaultAction.</summary>If <code>defaultAction</code> is set to block, matching rules will be allowed vice versa.</details><details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">rules</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubelet-ingress</span>
+<span class="w">    </span><span class="nt">portSelector</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10250</span>
+<span class="w">      </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tcp</span>
+<span class="w">    </span><span class="nt">ingress</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">subnet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">172.20.0.0/24</span>
+<span class="w">        </span><span class="nt">except</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">172.20.0.1/32</span>
+</code></pre></div>
+</details></td>
+<td align="center"><code>nil</code></td>
+<td align="center"><img align="center" alt="✅" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2705.png" title=":white_check_mark:" width="20px" /></td>
+</tr>
+</table>
+<h2 id="networkrule">NetworkRule</h2>
+<p><code>NetworkRule</code> defines the firewall rules to match.</p>
 <table>
 <tr>
 <th>Field</th>
@@ -559,140 +809,42 @@
 </tr>
 <tr>
 <td><code>name</code></td>
-<td>string</td>
-<td><details><summary>Configures the name of CNI to use</summary>Can be <code>flannel</code>, <code>custom</code> <code>none</code>.</details><details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flannel</span>
+<td><code>string</code></td>
+<td>Name of the rule.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubelet-ingress</span>
 </code></pre></div>
 </details></td>
-<td align="center"><code>""</code></td>
+<td align="center"><code>nil</code></td>
 <td align="center"><img align="center" alt="✅" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2705.png" title=":white_check_mark:" width="20px" /></td>
 </tr>
 <tr>
-<td><code>urls</code></td>
-<td>[]string</td>
-<td><details><summary>URLs containing manifests to apply for the CNI.</summary>Must be empty for <code>flannel</code> and <code>none</code>.</details><details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">urls</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://docs.projectcalico.org/archive/v3.20/manifests/canal.yaml</span>
-</code></pre></div>
-</summary></td>
-<td align="center"><code>[]</code></td>
-<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
-</tr>
-</table>
-<h2 id="controlplane">ControlPlane</h2>
-<p><code>ControlPlane</code> defines machine configurations for controlplane type nodes.</p>
-<table>
-<tr>
-<th>Field</th>
-<p><th>Type</th><th>Description</th><th>Default Value</th><th>Required</th></p>
-</tr>
-<tr>
-<td><code>patches</code></td>
-<td>[]string</td>
-<td><details><summary>Patches to be applied to all controlplane nodes.</summary>List of strings containing RFC6902 JSON patches, strategic merge patches,<br />or a file containing them.</details><details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">patches</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|-</span>
-<span class="w">    </span><span class="no">- op: add</span>
-<span class="w">      </span><span class="no">path: /machine/kubelet/extraArgs</span>
-<span class="w">      </span><span class="no">value:</span>
-<span class="w">        </span><span class="no">rotate-server-certificates: &quot;true&quot;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|-</span>
-<span class="w">    </span><span class="no">machine:</span>
-<span class="w">      </span><span class="no">env:</span>
-<span class="w">        </span><span class="no">MYENV: value</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@./a-patch.yaml&quot;</span>
+<td><code>portSelector</code></td>
+<td><a href="#portselector">PortSelector</a></td>
+<td>Ports and protocols on the host affected by the rule.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">portSelector</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10250</span>
+<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tcp</span>
 </code></pre></div>
 </details></td>
-<td align="center"><code>[]</code></td>
-<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+<td align="center"><code>nil</code></td>
+<td align="center"><img align="center" alt="✅" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2705.png" title=":white_check_mark:" width="20px" /></td>
 </tr>
 <tr>
-<td><code>configPatches</code></td>
-<td>[]map[string]interface{}</td>
-<td><details><summary><strong>DEPRECATED, use <code>patches</code> instead</strong>.</summary>List of RFC6902 JSON patches to be applied to all controlplane nodes.</details><details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">configPatches</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add</span>
-<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/machine/install/extraKernelArgs</span>
-<span class="w">    </span><span class="nt">value</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">console=ttyS1</span>
-</code></pre></div>
-</summary></td>
-<td align="center"><code>[]</code></td>
-<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
-</tr>
-<tr>
-<td><code>inlinePatch</code></td>
-<td>map[string]interface{}</td>
-<td><details><summary><strong>DEPRECATED, use <code>patches</code> instead</strong>.</summary>Strategic merge patches to be applied to all controlplane nodes.</details><details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">inlinePatch</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">machine</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">interfaces</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">interface</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">eth0</span>
-<span class="w">          </span><span class="nt">addresses</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">192.168.200.11/24</span><span class="p p-Indicator">]</span>
-</code></pre></div>
-</summary></td>
-<td align="center"><code>map[]</code></td>
-<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
-</tr>
-</table>
-<h2 id="worker">Worker</h2>
-<p><code>Worker</code> defines machine configurations for worker type nodes.</p>
-<table>
-<tr>
-<th>Field</th>
-<p><th>Type</th><th>Description</th><th>Default Value</th><th>Required</th></p>
-</tr>
-<tr>
-<td><code>patches</code></td>
-<td>[]string</td>
-<td><details><summary>Patches to be applied to all worker nodes.</summary>List of strings containing RFC6902 JSON patches, strategic merge patches,<br />or a file containing them.</details><details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">patches</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|-</span>
-<span class="w">    </span><span class="no">- op: add</span>
-<span class="w">      </span><span class="no">path: /machine/kubelet/extraArgs</span>
-<span class="w">      </span><span class="no">value:</span>
-<span class="w">        </span><span class="no">rotate-server-certificates: &quot;true&quot;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|-</span>
-<span class="w">    </span><span class="no">machine:</span>
-<span class="w">      </span><span class="no">env:</span>
-<span class="w">        </span><span class="no">MYENV: value</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@./a-patch.yaml&quot;</span>
+<td><code>ingress</code></td>
+<td>[]<a href="#ingressconfig">IngressConfig</a></td>
+<td>List of source subnets allowed to access the host ports/protocols.<details><summary><em>Show example</em></summary>
+<div class="highlight"><pre><span></span><code><span class="nt">ingress</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">subnet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">172.20.0.0/24</span>
+<span class="w">    </span><span class="nt">except</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">172.20.0.1/32</span>
 </code></pre></div>
 </details></td>
-<td align="center"><code>[]</code></td>
-<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
-</tr>
-<tr>
-<td><code>configPatches</code></td>
-<td>[]map[string]interface{}</td>
-<td><details><summary><strong>DEPRECATED, use <code>patches</code> instead</strong>.</summary>List of RFC6902 JSON patches to be applied to all worker nodes.</details><details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">configPatches</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add</span>
-<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/machine/install/extraKernelArgs</span>
-<span class="w">    </span><span class="nt">value</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">console=ttyS1</span>
-</code></pre></div>
-</summary></td>
-<td align="center"><code>[]</code></td>
-<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
-</tr>
-<tr>
-<td><code>inlinePatch</code></td>
-<td>map[string]interface{}</td>
-<td><details><summary><strong>DEPRECATED, use <code>patches</code> instead</strong>.</summary>Strategic merge patches to be applied to all worker nodes.</details><details><summary><em>Show example</em></summary>
-<div class="highlight"><pre><span></span><code><span class="nt">inlinePatch</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">machine</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">network</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">interfaces</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">interface</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">eth0</span>
-<span class="w">          </span><span class="nt">addresses</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">192.168.200.11/24</span><span class="p p-Indicator">]</span>
-</code></pre></div>
-</summary></td>
-<td align="center"><code>map[]</code></td>
-<td align="center"><img align="center" alt="❎" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/274e.png" title=":negative_squared_cross_mark:" width="20px" /></td>
+<td align="center"><code>nil</code></td>
+<td align="center"><img align="center" alt="✅" class="emojione" height="20px" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2705.png" title=":white_check_mark:" width="20px" /></td>
 </tr>
 </table>
+<h2 id="cniconfig">CNIConfig</h2>
+<p><code>CNIConfig</code> is type of upstream Talos <a href="https://www.talos.dev/latest/reference/configuration/#cniconfig" target="_blank"><code>v1alpha1.CNIConfig</code></a></p>
 <h2 id="installdiskselector">InstallDiskSelector</h2>
 <p><code>InstallDiskSelector</code> is type of upstream Talos <a href="https://www.talos.dev/latest/reference/configuration/#installdiskselector" target="_blank"><code>v1alpha1.InstallDiskSelector</code></a>.</p>
 <h2 id="machinedisk">MachineDisk</h2>
@@ -701,10 +853,16 @@
 <p><code>MachineFile</code> is type of upstream Talos <a href="https://www.talos.dev/latest/reference/configuration/#machinefile" target="_blank"><code>v1alpha1.MachineFile</code></a></p>
 <h2 id="installextensionconfig">InstallExtensionConfig</h2>
 <p><code>InstallExtensionConfig</code> is type of upstream Talos <a href="https://www.talos.dev/latest/reference/configuration/#installextensionconfig" target="_blank"><code>v1alpha1.InstallExtensionConfig</code></a></p>
+<h2 id="schematic">Schematic</h2>
+<p><code>Schematic</code> is type of upstream Talos Image Factory <a href="https://pkg.go.dev/github.com/siderolabs/image-factory/pkg/schematic#Schematic" target="_blank"><code>schematic.Schematic</code></a></p>
 <h2 id="kernelmoduleconfig">KernelModuleConfig</h2>
 <p><code>KernelModuleConfig</code> is type of upstream Talos <a href="https://www.talos.dev/latest/reference/configuration/#kernelmoduleconfig" target="_blank"><code>v1alpha1.KernelModuleConfig</code></a></p>
 <h2 id="device">Device</h2>
 <p><code>Device</code> is type of upstream Talos <a href="https://www.talos.dev/latest/reference/configuration/#device" target="_blank"><code>v1alpha1.Device</code></a></p>
+<h2 id="portselector">PortSelector</h2>
+<p><code>PortSelector</code> is type of upstream Talos <a href="https://www.talos.dev/latest/reference/configuration/network/networkruleconfig/#NetworkRuleConfig.portSelector" target="_blank"><code>network.RulePortSelector</code></a></p>
+<h2 id="ingressconfig">IngressConfig</h2>
+<p><code>IngressConfig</code> is type of upstream Talos <a href="https://www.talos.dev/latest/reference/configuration/network/networkruleconfig/#NetworkRuleConfig.ingress" target="_blank"><code>network.IngressConfig</code></a></p>
               
             </div>
           </div><footer>
